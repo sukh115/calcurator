@@ -28,6 +28,7 @@ public class challenge {
                 break;
             }
 
+
             try {
                 double num1 = Double.parseDouble(calculator.getFirstInput());
                 double num2 = Double.parseDouble(calculator.getSecondInput());

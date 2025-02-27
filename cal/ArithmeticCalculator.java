@@ -2,9 +2,125 @@ package cal;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class ArithmeticCalculator<T extends Number> {
+
+    // 속성
+    private final List<Double> results;
+    private String firstInput;
+    private String secondInput;
+    private char operator;
+
+
+    // 생성자
+    public ArithmeticCalculator() {
+        results = new ArrayList<>();
+    }
+
+
+    //  입력값 검증 메서드
+    public boolean validateInput(String input) {
+        if (input.trim().isEmpty()) { // 공백 입력 확인
+            System.out.println("아무 값도 입력하지 않았습니다. 값을 다시 입력하세요.");
+            return false;
+        }
+        return true;
+    }
+
+    // 종료 처리 메서드
+    public static boolean exit(String input) {
+        return input.equalsIgnoreCase("exit");
+    }
+
+
+    // 첫 번째 숫자 입력 메서드
+    public void setFirstInput(Scanner sc) {
+        while (true) {
+            System.out.println("첫 번째 숫자를 입력하세요. 'exit' 입력 시 종료, 'remove' 입력시 첫번 째 결과 값 삭제 : ");
+            String input = sc.nextLine();
+
+            // 입력 유효성 검사
+            if (!validateInput(input)) {
+                continue;
+            }
+
+            // 종료 처리
+            if (exit(input)) {
+                firstInput = "exit"; // 종료
+                return;
+            }
+
+            // remove 처리
+            if (input.equalsIgnoreCase("remove")) {
+                removeList();
+                System.out.println("삭제 후 현재 값들 : " + getResults());
+                continue; // remove 처리 후 다시 입력
+            }
+
+            firstInput = input; // 유효한 입력을 설정
+            return;
+        }
+    }
+
+    // 첫 번째 입력값 반환
+    public String getFirstInput() {
+        return firstInput;
+    }
+    // 연산자 입력 메서드
+    public void setOperator(Scanner sc) {
+        while (true) {
+            System.out.println("연산자를 입력하세요 (+,-,*,/) 또는 'exit' 입력 시 종료:");
+            String input = sc.nextLine();
+
+            // 입력 유효성 검사
+            if (!validateInput(input)) {
+                continue;
+            }
+
+            // 종료 처리
+            if (exit(input)) {
+                operator = 'e'; // 종료를 알리는 특수 문자
+                return;
+            }
+
+            operator = input.charAt(0); // 연산자 설정
+            return;
+        }
+    }
+    // 연산자 반환
+    public char getOperator() {
+        return operator;
+    }
+
+
+    // 두 번째 숫자 입력 메서드
+    public void setSecondInput(Scanner sc) {
+        while (true) {
+            System.out.println("두 번째 숫자를 입력하세요 또는 'exit' 입력 시 종료:");
+            String input = sc.nextLine();
+
+            // 입력 유효성 검사
+            if (!validateInput(input)) {
+                continue;
+            }
+
+            // 종료 처리
+            if (exit(input)) {
+                secondInput = "exit"; // 종료
+                return;
+            }
+
+            secondInput = input; // 유효한 입력을 설정
+            return;
+        }
+    }
+
+    // 두 번째 입력값 반환
+    public String getSecondInput() {
+        return secondInput;
+    }
 
     // 연산 열거형 정의 (기호로 변경)
     public enum Operation {
@@ -46,19 +162,33 @@ public class ArithmeticCalculator<T extends Number> {
         }
     }
 
-    // 연산 결과를 저장하는 리스트
-    private final List<Double> results;
-
-    // 생성자
-    public ArithmeticCalculator() {
-        results = new ArrayList<>();
+    // 최신 결과 반환
+    public double getLastResult() {
+        if (results.isEmpty()) {
+            return 0; // 결과가 없으면 0 반환
+        }
+        return results.get(results.size() - 1);
     }
 
+    // 결과 리스트 반환
+    public List<Double> getResults() {
+        return new ArrayList<>(results); // 원본 보호를 위해 복사본 반환
+    }
+
+    // 첫 번째 결과 삭제
+    public void removeList() {
+        if (!results.isEmpty()) {
+            results.remove(0); // 첫 번째 결과 삭제
+        }
+    }
+
+
     // 연산 수행 메서드
-    public double calculate(T num1, String operator,T num2) {
+    public double calculate(T num1, char operator,T num2) {
         try {
-            // 연산자를 Operation으로 변환하여 처리
-            Operation operation = Operation.fromSymbol(operator);
+            // 연산자를 Operation으로 변환하여 처리(char값을 String으로 변환)
+            Operation operation = Operation.fromSymbol(String.valueOf(operator)
+            );
             double result = operation.apply(num1, num2);
             results.add(result); // 결과 저장
             return result;
@@ -68,29 +198,7 @@ public class ArithmeticCalculator<T extends Number> {
         }
     }
 
-    // 최신 연산 결과 반환
-    public double getLastResult() {
-        if (results.isEmpty()) {
-            System.out.println("저장된 결과가 없습니다.");
-            return Double.NaN; // 결과가 없으면 NaN 반환
-        }
-        return results.get(results.size() - 1);
-    }
 
-    // 모든 결과 리스트 반환
-    public List<Double> getResults() {
-        return new ArrayList<>(results); // 원본 보호를 위해 복사된 리스트 반환
-    }
-
-    // 가장 먼저 저장된 결과 삭제
-    public void removeFirstResult() {
-        if (!results.isEmpty()) {
-            results.remove(0);
-            System.out.println("첫 번째 결과가 삭제되었습니다.");
-        } else {
-            System.out.println("삭제할 데이터가 없습니다.");
-        }
-    }
 
     // 모든 결과 출력
     public void printResults() {
@@ -100,12 +208,6 @@ public class ArithmeticCalculator<T extends Number> {
         }
     }
 
-    // 입력받은 값보다 큰 결과값들 출력
-//    public List<Double> printbiggerResults(double num){
-//            return results.stream()
-//                .filter(result -> result > num)
-//                .collect(Collectors.toList());
-//    }
     public void printBiggerResultsWithForEach(double num) {
         results.stream()
                 .filter(result -> result > num) // 필터링: num보다 큰 값
